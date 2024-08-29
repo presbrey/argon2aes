@@ -38,10 +38,16 @@ func TestMain(t *testing.T) {
 		os.Stderr = w
 
 		// Set command-line arguments
-		os.Args = []string{"a2a", "-e", "-i", inFile, "-o", outFile, "-p", string(password)}
+		encrypt = true
+		inputFile = inFile
+		outputFile = outFile
+		passphrase = string(password)
 
-		// Run main
-		main()
+		// Run the command
+		err = run()
+		if err != nil {
+			t.Fatalf("Failed to run command: %v", err)
+		}
 
 		// Restore stdout and stderr
 		w.Close()
@@ -67,10 +73,17 @@ func TestMain(t *testing.T) {
 		os.Stderr = w
 
 		// Set command-line arguments
-		os.Args = []string{"a2a", "-d", "-i", inFile, "-o", outFile, "-p", string(password)}
+		encrypt = false
+		decrypt = true
+		inputFile = inFile
+		outputFile = outFile
+		passphrase = string(password)
 
-		// Run main
-		main()
+		// Run the command
+		err = run()
+		if err != nil {
+			t.Fatalf("Failed to run command: %v", err)
+		}
 
 		// Restore stdout and stderr
 		w.Close()
@@ -99,16 +112,22 @@ func TestMain(t *testing.T) {
 		os.Stderr = w
 
 		// Set invalid command-line arguments (both encrypt and decrypt)
-		os.Args = []string{"a2a", "-e", "-d"}
+		encrypt = true
+		decrypt = true
 
-		// Run main
-		main()
+		// Run the command
+		err := run()
 
 		// Restore stdout and stderr
 		w.Close()
 		out, _ := ioutil.ReadAll(r)
 		os.Stdout = oldStdout
 		os.Stderr = oldStderr
+
+		// Check if an error was returned
+		if err == nil {
+			t.Errorf("Expected an error for invalid arguments, but got none")
+		}
 
 		// Check if usage information was printed
 		if !bytes.Contains(out, []byte("Usage of")) {

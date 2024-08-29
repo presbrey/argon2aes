@@ -11,57 +11,63 @@ import (
 	"golang.org/x/term"
 )
 
-func main() {
-	var (
-		password, key,
-		inputFile, outputFile string
-		passwordBytes    []byte
-		encrypt, decrypt bool
-		err              error
-	)
+var (
+	passphrase, key,
+	inputFile, outputFile string
+	passphraseBytes  []byte
+	encrypt, decrypt bool
+)
 
+func init() {
 	pflag.StringVarP(&key, "key", "k", "", "Encryption key (base64 encoded)")
-	pflag.StringVarP(&password, "passphrase", "p", "", "Encryption passphrase")
+	pflag.StringVarP(&passphrase, "passphrase", "p", "", "Encryption passphrase")
 	pflag.StringVarP(&inputFile, "in", "i", "-", "Input file (default: stdin)")
 	pflag.StringVarP(&outputFile, "out", "o", "-", "Output file (default: stdout)")
 	pflag.BoolVarP(&encrypt, "encrypt", "e", false, "Encrypt mode")
 	pflag.BoolVarP(&decrypt, "decrypt", "d", false, "Decrypt mode")
 	pflag.Parse()
+}
+
+func main() {
+	if err := run(); err != nil {
+		log.Printf("Error: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func run() error {
+	var err error
 
 	if encrypt == decrypt {
 		pflag.Usage()
-		os.Exit(1)
+		return fmt.Errorf("must specify either encrypt or decrypt mode")
 	}
 
 	if key != "" {
-		passwordBytes, err = base64.StdEncoding.DecodeString(key)
+		passphraseBytes, err = base64.StdEncoding.DecodeString(key)
 		if err != nil {
-			log.Println("Invalid key. Must be base64 encoded.")
-			os.Exit(1)
+			return fmt.Errorf("invalid key. Must be base64 encoded")
 		}
-	} else if password != "" {
-		passwordBytes = []byte(password)
+	} else if passphrase != "" {
+		passphraseBytes = []byte(passphrase)
 	} else {
 		fmt.Print("Enter passphrase: ")
-		passwordBytes, err = term.ReadPassword(int(os.Stdin.Fd()))
+		passphraseBytes, err = term.ReadPassword(int(os.Stdin.Fd()))
 		if err != nil {
-			log.Fatalf("Error reading passphrase: %v", err)
+			return fmt.Errorf("error reading passphrase: %v", err)
 		}
 		fmt.Println() // Print a newline after the password input
 	}
 
-	if len(passwordBytes) == 0 {
-		log.Fatalf("Passphrase cannot be empty")
+	if len(passphraseBytes) == 0 {
+		return fmt.Errorf("passphrase cannot be empty")
 	}
 
 	if encrypt {
-		err = argon2aes.EncryptFile(inputFile, outputFile, passwordBytes)
+		err = argon2aes.EncryptFile(inputFile, outputFile, passphraseBytes)
 	} else {
-		err = argon2aes.DecryptFile(inputFile, outputFile, passwordBytes)
+		err = argon2aes.DecryptFile(inputFile, outputFile, passphraseBytes)
 	}
 
-	if err != nil {
-		log.Printf("Error: %v\n", err)
-		os.Exit(1)
-	}
+	return err
 }
