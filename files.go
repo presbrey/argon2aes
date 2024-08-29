@@ -6,12 +6,10 @@ import (
 )
 
 func EncryptFile(inputPath, outputPath string, password []byte) error {
-	var input io.Reader
-	var output io.Writer
+	input := os.Stdin
+	output := os.Stdout
 
-	if inputPath == "-" {
-		input = os.Stdin
-	} else {
+	if inputPath != "-" {
 		file, err := os.Open(inputPath)
 		if err != nil {
 			return err
@@ -20,9 +18,7 @@ func EncryptFile(inputPath, outputPath string, password []byte) error {
 		input = file
 	}
 
-	if outputPath == "-" {
-		output = os.Stdout
-	} else {
+	if outputPath != "-" {
 		file, err := os.Create(outputPath)
 		if err != nil {
 			return err
@@ -46,12 +42,10 @@ func EncryptFile(inputPath, outputPath string, password []byte) error {
 }
 
 func DecryptFile(inputPath, outputPath string, password []byte) error {
-	var input io.Reader
-	var output io.Writer
+	input := os.Stdin
+	output := os.Stdout
 
-	if inputPath == "-" {
-		input = os.Stdin
-	} else {
+	if inputPath != "-" {
 		file, err := os.Open(inputPath)
 		if err != nil {
 			return err
@@ -60,9 +54,7 @@ func DecryptFile(inputPath, outputPath string, password []byte) error {
 		input = file
 	}
 
-	if outputPath == "-" {
-		output = os.Stdout
-	} else {
+	if outputPath != "-" {
 		file, err := os.Create(outputPath)
 		if err != nil {
 			return err
