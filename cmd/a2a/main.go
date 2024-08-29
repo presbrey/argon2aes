@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/presbrey/argon2aes"
 	"github.com/spf13/pflag"
@@ -44,7 +45,13 @@ func run() error {
 	}
 
 	if key != "" {
-		passphraseBytes, err = base64.StdEncoding.DecodeString(key)
+		var encoding *base64.Encoding
+		if strings.ContainsAny(key, "-_") {
+			encoding = base64.URLEncoding
+		} else {
+			encoding = base64.StdEncoding
+		}
+		passphraseBytes, err = encoding.DecodeString(key)
 		if err != nil {
 			return fmt.Errorf("invalid key. Must be base64 encoded")
 		}

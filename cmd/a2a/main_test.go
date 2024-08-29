@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/base64"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -148,7 +147,7 @@ func TestMain(t *testing.T) {
 		}
 
 		// Generate a base64 encoded key
-		base64Key := base64.StdEncoding.EncodeToString([]byte("testbase64key"))
+		base64Key := "YWJjMTIzIT8kKiYoKSctPUB+"
 
 		// Encrypt with base64 key
 		encrypt = true
@@ -174,6 +173,58 @@ func TestMain(t *testing.T) {
 		err = run()
 		if err != nil {
 			t.Fatalf("Failed to run decryption with base64 key: %v", err)
+		}
+
+		// Read the decrypted file
+		decrypted, err := ioutil.ReadFile(decryptedFile)
+		if err != nil {
+			t.Fatalf("Failed to read decrypted file: %v", err)
+		}
+
+		// Compare the decrypted content with the original plaintext
+		if !bytes.Equal(decrypted, plaintext) {
+			t.Errorf("Decrypted content does not match original. Got %s, want %s", decrypted, plaintext)
+		}
+	})
+
+	// Test URL-safe base64 key
+	t.Run("URLSafeBase64Key", func(t *testing.T) {
+		inFile := filepath.Join(tempDir, "input_urlsafe.txt")
+		outFile := filepath.Join(tempDir, "encrypted_urlsafe.bin")
+		decryptedFile := filepath.Join(tempDir, "decrypted_urlsafe.txt")
+
+		err := ioutil.WriteFile(inFile, plaintext, 0644)
+		if err != nil {
+			t.Fatalf("Failed to write input file: %v", err)
+		}
+
+		// Generate a URL-safe base64 encoded key
+		urlSafeKey := "YWJjMTIzIT8kKiYoKSctPUB-"
+
+		// Encrypt with URL-safe base64 key
+		encrypt = true
+		decrypt = false
+		inputFile = inFile
+		outputFile = outFile
+		key = urlSafeKey
+		passphrase = ""
+
+		err = run()
+		if err != nil {
+			t.Fatalf("Failed to run encryption with URL-safe base64 key: %v", err)
+		}
+
+		// Decrypt with URL-safe base64 key
+		encrypt = false
+		decrypt = true
+		inputFile = outFile
+		outputFile = decryptedFile
+		key = urlSafeKey
+		passphrase = ""
+
+		err = run()
+		if err != nil {
+			t.Fatalf("Failed to run decryption with URL-safe base64 key: %v", err)
 		}
 
 		// Read the decrypted file
