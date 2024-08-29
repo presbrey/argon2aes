@@ -54,8 +54,29 @@ Additional flags:
 - `-k, --key`: Specify a base64-encoded encryption key
 - `-i, --in`: Input file (default: stdin)
 - `-o, --out`: Output file (default: stdout)
+- `-6, --base64`: Use standard base64 encoding for input/output
+- `-9, --base92`: Use base92 encoding for input/output
+- `-u, --url64`: Use URL-safe base64 encoding for input/output
 
 You will be prompted to enter a passphrase if not provided via the command line.
+
+## Encoding Options
+
+A2A supports different encoding options for input and output:
+
+1. **Base64**: Use `-6` or `--base64` flag for standard base64 encoding.
+2. **Base92**: Use `-9` or `--base92` flag for base92 encoding.
+3. **URL-safe Base64**: Use `-u` or `--url64` flag for URL-safe base64 encoding.
+
+These encoding options can be useful when working with different types of data or when you need to ensure compatibility with specific systems or protocols.
+
+Example usage with encoding:
+```
+a2a -e -i <input_file> -o <output_file> -6
+a2a -d -i <input_file> -o <output_file> -u
+```
+
+Note: You can only use one encoding option at a time.
 
 ## API Usage
 
