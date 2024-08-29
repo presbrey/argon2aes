@@ -238,4 +238,42 @@ func TestMain(t *testing.T) {
 			t.Errorf("Decrypted content does not match original. Got %s, want %s", decrypted, plaintext)
 		}
 	})
+
+	// Test invalid key
+	t.Run("InvalidKey", func(t *testing.T) {
+		inFile := filepath.Join(tempDir, "input_invalid.txt")
+		outFile := filepath.Join(tempDir, "encrypted_invalid.bin")
+
+		err := ioutil.WriteFile(inFile, plaintext, 0644)
+		if err != nil {
+			t.Fatalf("Failed to write input file: %v", err)
+		}
+
+		// Set an invalid base64 key
+		invalidKey := "this is not a valid base64 key"
+
+		// Try to encrypt with invalid key
+		encrypt = true
+		decrypt = false
+		inputFile = inFile
+		outputFile = outFile
+		key = invalidKey
+		passphrase = ""
+
+		err = run()
+		if err == nil {
+			t.Errorf("Expected an error when encrypting with invalid key, but got none")
+		}
+
+		// Try to decrypt with invalid key
+		encrypt = false
+		decrypt = true
+		inputFile = outFile
+		outputFile = filepath.Join(tempDir, "decrypted_invalid.txt")
+
+		err = run()
+		if err == nil {
+			t.Errorf("Expected an error when decrypting with invalid key, but got none")
+		}
+	})
 }
