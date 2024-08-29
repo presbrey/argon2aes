@@ -2,11 +2,13 @@ package main
 
 import (
 	"encoding/base64"
+	"fmt"
 	"log"
 	"os"
 
 	"github.com/presbrey/argon2aes"
 	"github.com/spf13/pflag"
+	"golang.org/x/term"
 )
 
 func main() {
@@ -26,7 +28,7 @@ func main() {
 	pflag.BoolVarP(&decrypt, "decrypt", "d", false, "Decrypt mode")
 	pflag.Parse()
 
-	if (password == "" && key == "") || (encrypt == decrypt) {
+	if encrypt == decrypt {
 		pflag.Usage()
 		os.Exit(1)
 	}
@@ -37,8 +39,19 @@ func main() {
 			log.Println("Invalid key. Must be base64 encoded.")
 			os.Exit(1)
 		}
-	} else {
+	} else if password != "" {
 		passwordBytes = []byte(password)
+	} else {
+		fmt.Print("Enter passphrase: ")
+		passwordBytes, err = term.ReadPassword(int(os.Stdin.Fd()))
+		if err != nil {
+			log.Fatalf("Error reading passphrase: %v", err)
+		}
+		fmt.Println() // Print a newline after the password input
+	}
+
+	if len(passwordBytes) == 0 {
+		log.Fatalf("Passphrase cannot be empty")
 	}
 
 	if encrypt {
