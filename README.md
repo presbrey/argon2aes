@@ -1,3 +1,9 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/presbrey/argon2aes)](https://goreportcard.com/report/github.com/presbrey/argon2aes)
+[![codecov](https://codecov.io/gh/presbrey/argon2aes/branch/main/graph/badge.svg)](https://codecov.io/gh/presbrey/argon2aes)
+![Go Test](https://github.com/presbrey/argon2aes/workflows/Go%20Test/badge.svg)
+[![GoDoc](https://godoc.org/github.com/presbrey/argon2aes?status.svg)](https://godoc.org/github.com/presbrey/argon2aes)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 # A2A: Argon2 and AES-256 Encryption Tool
 
 A2A is a secure encryption tool that uses Argon2 for key derivation and AES-256 for encryption. It provides both a Command Line Interface (CLI) and an API for easy integration into your projects.
