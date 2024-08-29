@@ -39,7 +39,7 @@ func TestMain(t *testing.T) {
 		os.Stderr = w
 
 		// Set command-line arguments
-		encrypt = true
+		flagEncrypt = true
 		inputFile = inFile
 		outputFile = outFile
 		passphrase = string(password)
@@ -74,8 +74,8 @@ func TestMain(t *testing.T) {
 		os.Stderr = w
 
 		// Set command-line arguments
-		encrypt = false
-		decrypt = true
+		flagEncrypt = false
+		flagDecrypt = true
 		inputFile = inFile
 		outputFile = outFile
 		passphrase = string(password)
@@ -113,8 +113,8 @@ func TestMain(t *testing.T) {
 		os.Stderr = w
 
 		// Set invalid command-line arguments (both encrypt and decrypt)
-		encrypt = true
-		decrypt = true
+		flagEncrypt = true
+		flagDecrypt = true
 
 		// Run the command
 		err := run()
@@ -151,8 +151,8 @@ func TestMain(t *testing.T) {
 		base64Key := "YWJjMTIzIT8kKiYoKSctPUB+"
 
 		// Encrypt with base64 key
-		encrypt = true
-		decrypt = false
+		flagEncrypt = true
+		flagDecrypt = false
 		inputFile = inFile
 		outputFile = outFile
 		key = base64Key
@@ -164,8 +164,8 @@ func TestMain(t *testing.T) {
 		}
 
 		// Decrypt with base64 key
-		encrypt = false
-		decrypt = true
+		flagEncrypt = false
+		flagDecrypt = true
 		inputFile = outFile
 		outputFile = decryptedFile
 		key = base64Key
@@ -203,8 +203,8 @@ func TestMain(t *testing.T) {
 		urlSafeKey := "YWJjMTIzIT8kKiYoKSctPUB-"
 
 		// Encrypt with URL-safe base64 key
-		encrypt = true
-		decrypt = false
+		flagEncrypt = true
+		flagDecrypt = false
 		inputFile = inFile
 		outputFile = outFile
 		key = urlSafeKey
@@ -216,8 +216,8 @@ func TestMain(t *testing.T) {
 		}
 
 		// Decrypt with URL-safe base64 key
-		encrypt = false
-		decrypt = true
+		flagEncrypt = false
+		flagDecrypt = true
 		inputFile = outFile
 		outputFile = decryptedFile
 		key = urlSafeKey
@@ -254,8 +254,8 @@ func TestMain(t *testing.T) {
 		invalidKey := "this is not a valid base64 key"
 
 		// Try to encrypt with invalid key
-		encrypt = true
-		decrypt = false
+		flagEncrypt = true
+		flagDecrypt = false
 		inputFile = inFile
 		outputFile = outFile
 		key = invalidKey
@@ -267,8 +267,8 @@ func TestMain(t *testing.T) {
 		}
 
 		// Try to decrypt with invalid key
-		encrypt = false
-		decrypt = true
+		flagEncrypt = false
+		flagDecrypt = true
 		inputFile = outFile
 		outputFile = filepath.Join(tempDir, "decrypted_invalid.txt")
 
@@ -291,8 +291,8 @@ func TestMain(t *testing.T) {
 		}
 
 		// Encrypt with base64 input
-		encrypt = true
-		decrypt = false
+		flagEncrypt = true
+		flagDecrypt = false
 		inputFile = inFile
 		outputFile = outFile
 		key = string(password)
@@ -305,8 +305,8 @@ func TestMain(t *testing.T) {
 		}
 
 		// Decrypt with base64 output
-		encrypt = false
-		decrypt = true
+		flagEncrypt = false
+		flagDecrypt = true
 		inputFile = outFile
 		outputFile = decryptedFile
 		passphrase = string(password)
@@ -349,8 +349,8 @@ func TestMain(t *testing.T) {
 		}
 
 		// Encrypt with base92 input
-		encrypt = true
-		decrypt = false
+		flagEncrypt = true
+		flagDecrypt = false
 		inputFile = inFile
 		outputFile = outFile
 		passphrase = string(password)
@@ -363,8 +363,8 @@ func TestMain(t *testing.T) {
 		}
 
 		// Decrypt with base92 output
-		encrypt = false
-		decrypt = true
+		flagEncrypt = false
+		flagDecrypt = true
 		inputFile = outFile
 		outputFile = decryptedFile
 		passphrase = string(password)

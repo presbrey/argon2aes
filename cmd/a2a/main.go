@@ -17,7 +17,7 @@ var (
 	passphrase, key,
 	inputFile, outputFile string
 	passphraseBytes                []byte
-	encrypt, decrypt               bool
+	flagEncrypt, flagDecrypt       bool
 	useBase64, useBase92, useURL64 bool
 )
 
@@ -26,8 +26,8 @@ func init() {
 	pflag.StringVarP(&passphrase, "passphrase", "p", "", "Encryption passphrase")
 	pflag.StringVarP(&inputFile, "in", "i", "-", "Input file (default: stdin)")
 	pflag.StringVarP(&outputFile, "out", "o", "-", "Output file (default: stdout)")
-	pflag.BoolVarP(&encrypt, "encrypt", "e", false, "Encrypt mode")
-	pflag.BoolVarP(&decrypt, "decrypt", "d", false, "Decrypt mode")
+	pflag.BoolVarP(&flagEncrypt, "encrypt", "e", false, "Encrypt mode")
+	pflag.BoolVarP(&flagDecrypt, "decrypt", "d", false, "Decrypt mode")
 	pflag.BoolVarP(&useBase64, "base64", "6", false, "Use standard base64 encoding for input/output")
 	pflag.BoolVarP(&useBase92, "base92", "9", false, "Use base92 encoding for input/output")
 	pflag.BoolVarP(&useURL64, "url64", "u", false, "Use URL-safe base64 encoding for input/output")
@@ -44,7 +44,7 @@ func main() {
 func run() error {
 	var err error
 
-	if encrypt == decrypt {
+	if flagEncrypt == flagDecrypt {
 		pflag.Usage()
 		return fmt.Errorf("must specify either encrypt or decrypt mode")
 	}
@@ -79,7 +79,7 @@ func run() error {
 		return fmt.Errorf("passphrase cannot be empty")
 	}
 
-	if encrypt {
+	if flagEncrypt {
 		err = encryptWithEncoding(inputFile, outputFile, passphraseBytes)
 	} else {
 		err = decryptWithEncoding(inputFile, outputFile, passphraseBytes)
@@ -130,12 +130,14 @@ func readInput(inputFile string) ([]byte, error) {
 		return nil, err
 	}
 
-	if useBase64 {
-		return base64.StdEncoding.DecodeString(string(input))
-	} else if useURL64 {
-		return base64.URLEncoding.DecodeString(string(input))
-	} else if useBase92 {
-		return base92decode(string(input))
+	if flagDecrypt {
+		if useBase64 {
+			return base64.StdEncoding.DecodeString(string(input))
+		} else if useURL64 {
+			return base64.URLEncoding.DecodeString(string(input))
+		} else if useBase92 {
+			return base92decode(string(input))
+		}
 	}
 
 	return input, nil
@@ -144,12 +146,16 @@ func readInput(inputFile string) ([]byte, error) {
 func writeOutput(outputFile string, data []byte) error {
 	var output []byte
 
-	if useBase64 {
-		output = []byte(base64.StdEncoding.EncodeToString(data))
-	} else if useURL64 {
-		output = []byte(base64.URLEncoding.EncodeToString(data))
-	} else if useBase92 {
-		output = []byte(base92encode(data))
+	if flagEncrypt {
+		if useBase64 {
+			output = []byte(base64.StdEncoding.EncodeToString(data))
+		} else if useURL64 {
+			output = []byte(base64.URLEncoding.EncodeToString(data))
+		} else if useBase92 {
+			output = []byte(base92encode(data))
+		} else {
+			output = data
+		}
 	} else {
 		output = data
 	}
