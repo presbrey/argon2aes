@@ -95,3 +95,28 @@ func TestEncryptDecryptWithBlankKey(t *testing.T) {
 	}
 	defer os.Remove(decryptedFile)
 }
+
+func TestEncryptDecryptNoPermission(t *testing.T) {
+	inputFile := "testinput.txt"
+	noPermissionFile := "\000"
+	password := []byte("testpassword")
+	testData := []byte("This is a test file content.")
+
+	// Create a test file
+	if err := os.WriteFile(inputFile, testData, 0644); err != nil {
+		t.Fatalf("Failed to create test input file: %v", err)
+	}
+	defer os.Remove(inputFile)
+
+	// Try to encrypt to a file without write permission
+	err := EncryptFile(inputFile, noPermissionFile, password)
+	if err == nil {
+		t.Error("Expected an error when encrypting to a file without write permission, but got none")
+	}
+
+	// Try to decrypt to a file without write permission
+	err = DecryptFile(inputFile, noPermissionFile, password)
+	if err == nil {
+		t.Error("Expected an error when decrypting to a file without write permission, but got none")
+	}
+}
