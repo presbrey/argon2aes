@@ -148,9 +148,9 @@ func writeOutput(outputFile string, data []byte) error {
 
 	if flagEncrypt {
 		if useBase64 {
-			output = []byte(base64.StdEncoding.EncodeToString(data))
+			output = []byte(base64.RawStdEncoding.EncodeToString(data))
 		} else if useURL64 {
-			output = []byte(base64.URLEncoding.EncodeToString(data))
+			output = []byte(base64.RawURLEncoding.EncodeToString(data))
 		} else if useBase92 {
 			output = []byte(base92encode(data))
 		} else {

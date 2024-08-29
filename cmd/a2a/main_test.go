@@ -284,7 +284,7 @@ func TestMain(t *testing.T) {
 		outFile := filepath.Join(tempDir, "encrypted_base64.bin")
 		decryptedFile := filepath.Join(tempDir, "decrypted_base64.txt")
 
-		base64Plaintext := base64.StdEncoding.EncodeToString(plaintext)
+		base64Plaintext := base64.RawStdEncoding.EncodeToString(plaintext)
 		err := os.WriteFile(inFile, []byte(base64Plaintext), 0644)
 		if err != nil {
 			t.Fatalf("Failed to write input file: %v", err)
@@ -325,7 +325,7 @@ func TestMain(t *testing.T) {
 		}
 
 		// Decode base64
-		decodedDecrypted, err := base64.StdEncoding.DecodeString(string(decrypted))
+		decodedDecrypted, err := base64.RawStdEncoding.DecodeString(string(decrypted))
 		if err != nil {
 			t.Fatalf("Failed to decode base64: %v", err)
 		}
