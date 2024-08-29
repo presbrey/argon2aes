@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/presbrey/argon2aes"
+	"github.com/presbrey/argon2aes/pkg/base92"
 	"github.com/spf13/pflag"
 	"golang.org/x/term"
 )
@@ -80,15 +81,15 @@ func run() error {
 	}
 
 	if flagEncrypt {
-		err = encryptWithEncoding(inputFile, outputFile, passphraseBytes)
+		err = encrypt(inputFile, outputFile, passphraseBytes)
 	} else {
-		err = decryptWithEncoding(inputFile, outputFile, passphraseBytes)
+		err = decrypt(inputFile, outputFile, passphraseBytes)
 	}
 
 	return err
 }
 
-func encryptWithEncoding(inputFile, outputFile string, passphrase []byte) error {
+func encrypt(inputFile, outputFile string, passphrase []byte) error {
 	input, err := readInput(inputFile)
 	if err != nil {
 		return err
@@ -102,7 +103,7 @@ func encryptWithEncoding(inputFile, outputFile string, passphrase []byte) error 
 	return writeOutput(outputFile, encrypted)
 }
 
-func decryptWithEncoding(inputFile, outputFile string, passphrase []byte) error {
+func decrypt(inputFile, outputFile string, passphrase []byte) error {
 	input, err := readInput(inputFile)
 	if err != nil {
 		return err
@@ -136,7 +137,7 @@ func readInput(inputFile string) ([]byte, error) {
 		} else if useURL64 {
 			return base64.URLEncoding.DecodeString(string(input))
 		} else if useBase92 {
-			return base92decode(string(input))
+			return base92.DefaultEncoding.DecodeString(string(input))
 		}
 	}
 
@@ -152,7 +153,7 @@ func writeOutput(outputFile string, data []byte) error {
 		} else if useURL64 {
 			output = []byte(base64.RawURLEncoding.EncodeToString(data))
 		} else if useBase92 {
-			output = []byte(base92encode(data))
+			output = []byte(base92.DefaultEncoding.EncodeToString(data))
 		} else {
 			output = data
 		}
