@@ -1,9 +1,37 @@
 package argon2aes
 
-import "os"
+import (
+	"io"
+	"os"
+)
 
 func EncryptFile(inputPath, outputPath string, password []byte) error {
-	plaintext, err := os.ReadFile(inputPath)
+	var input io.Reader
+	var output io.Writer
+
+	if inputPath == "-" {
+		input = os.Stdin
+	} else {
+		file, err := os.Open(inputPath)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		input = file
+	}
+
+	if outputPath == "-" {
+		output = os.Stdout
+	} else {
+		file, err := os.Create(outputPath)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		output = file
+	}
+
+	plaintext, err := io.ReadAll(input)
 	if err != nil {
 		return err
 	}
@@ -13,11 +41,37 @@ func EncryptFile(inputPath, outputPath string, password []byte) error {
 		return err
 	}
 
-	return os.WriteFile(outputPath, ciphertext, 0644)
+	_, err = output.Write(ciphertext)
+	return err
 }
 
 func DecryptFile(inputPath, outputPath string, password []byte) error {
-	ciphertext, err := os.ReadFile(inputPath)
+	var input io.Reader
+	var output io.Writer
+
+	if inputPath == "-" {
+		input = os.Stdin
+	} else {
+		file, err := os.Open(inputPath)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		input = file
+	}
+
+	if outputPath == "-" {
+		output = os.Stdout
+	} else {
+		file, err := os.Create(outputPath)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		output = file
+	}
+
+	ciphertext, err := io.ReadAll(input)
 	if err != nil {
 		return err
 	}
@@ -27,5 +81,6 @@ func DecryptFile(inputPath, outputPath string, password []byte) error {
 		return err
 	}
 
-	return os.WriteFile(outputPath, plaintext, 0644)
+	_, err = output.Write(plaintext)
+	return err
 }
