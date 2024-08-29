@@ -9,20 +9,22 @@ The CLI allows you to encrypt and decrypt files directly from the command line. 
 To encrypt a file:
 ```
 a2a -e -i <input_file> -o <output_file>
-a2a --encrypt --input <input_file> --output <output_file>
+a2a --encrypt --in <input_file> --out <output_file>
 ```
 
 To decrypt a file:
 ```
 a2a -d -i <input_file> -o <output_file>
-a2a --decrypt --input <input_file> --output <output_file>
+a2a --decrypt --in <input_file> --out <output_file>
 ```
 
 Additional flags:
-- `-p, --password`: Specify the password (not recommended for security reasons)
-- `-v, --verbose`: Enable verbose output
+- `-p, --passphrase`: Specify the passphrase (not recommended for security reasons)
+- `-k, --key`: Specify a base64-encoded encryption key
+- `-i, --in`: Input file (default: stdin)
+- `-o, --out`: Output file (default: stdout)
 
-You will be prompted to enter a password if not provided via the command line.
+You will be prompted to enter a passphrase if not provided via the command line.
 
 ## API Usage
 

@@ -19,11 +19,11 @@ func main() {
 	)
 
 	pflag.StringVarP(&key, "key", "k", "", "Encryption key (base64 encoded)")
-	pflag.StringVarP(&password, "password", "p", "", "Encryption password (raw)")
-	pflag.StringVarP(&inputFile, "in", "i", "-", "Input file path (use '-' for stdin)")
-	pflag.StringVarP(&outputFile, "out", "o", "-", "Output file path (use '-' for stdout)")
-	pflag.BoolVarP(&encrypt, "encrypt", "e", false, "Encrypt the input file")
-	pflag.BoolVarP(&decrypt, "decrypt", "d", false, "Decrypt the input file")
+	pflag.StringVarP(&password, "passphrase", "p", "", "Encryption passphrase")
+	pflag.StringVarP(&inputFile, "in", "i", "-", "Input file (default: stdin)")
+	pflag.StringVarP(&outputFile, "out", "o", "-", "Output file (default: stdout)")
+	pflag.BoolVarP(&encrypt, "encrypt", "e", false, "Encrypt mode")
+	pflag.BoolVarP(&decrypt, "decrypt", "d", false, "Decrypt mode")
 	pflag.Parse()
 
 	if (password == "" && key == "") || (encrypt == decrypt) {
