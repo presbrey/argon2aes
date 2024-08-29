@@ -16,9 +16,9 @@ import (
 var (
 	passphrase, key,
 	inputFile, outputFile string
-	passphraseBytes      []byte
-	encrypt, decrypt     bool
-	useBase64, useBase92 bool
+	passphraseBytes                []byte
+	encrypt, decrypt               bool
+	useBase64, useBase92, useURL64 bool
 )
 
 func init() {
@@ -28,8 +28,9 @@ func init() {
 	pflag.StringVarP(&outputFile, "out", "o", "-", "Output file (default: stdout)")
 	pflag.BoolVarP(&encrypt, "encrypt", "e", false, "Encrypt mode")
 	pflag.BoolVarP(&decrypt, "decrypt", "d", false, "Decrypt mode")
-	pflag.BoolVarP(&useBase64, "b64", "base64", false, "Use base64 encoding for input/output")
-	pflag.BoolVarP(&useBase92, "b92", "base92", false, "Use base92 encoding for input/output")
+	pflag.BoolVarP(&useBase64, "base64", "6", false, "Use standard base64 encoding for input/output")
+	pflag.BoolVarP(&useBase92, "base92", "9", false, "Use base92 encoding for input/output")
+	pflag.BoolVarP(&useURL64, "url64", "u", false, "Use URL-safe base64 encoding for input/output")
 	pflag.Parse()
 }
 
@@ -48,8 +49,8 @@ func run() error {
 		return fmt.Errorf("must specify either encrypt or decrypt mode")
 	}
 
-	if useBase64 && useBase92 {
-		return fmt.Errorf("cannot use both base64 and base92 encoding")
+	if (useBase64 && useBase92) || (useBase64 && useURL64) || (useBase92 && useURL64) {
+		return fmt.Errorf("can only use one encoding option: base64, url64, or base92")
 	}
 
 	if key != "" {
@@ -131,6 +132,8 @@ func readInput(inputFile string) ([]byte, error) {
 
 	if useBase64 {
 		return base64.StdEncoding.DecodeString(string(input))
+	} else if useURL64 {
+		return base64.URLEncoding.DecodeString(string(input))
 	} else if useBase92 {
 		return base92decode(string(input))
 	}
@@ -143,6 +146,8 @@ func writeOutput(outputFile string, data []byte) error {
 
 	if useBase64 {
 		output = []byte(base64.StdEncoding.EncodeToString(data))
+	} else if useURL64 {
+		output = []byte(base64.URLEncoding.EncodeToString(data))
 	} else if useBase92 {
 		output = []byte(base92encode(data))
 	} else {
