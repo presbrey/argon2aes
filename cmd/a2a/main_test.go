@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -132,6 +133,58 @@ func TestMain(t *testing.T) {
 		// Check if usage information was printed
 		if !bytes.Contains(out, []byte("Usage of")) {
 			t.Errorf("Usage information was not printed for invalid arguments")
+		}
+	})
+
+	// Test base64 key
+	t.Run("Base64Key", func(t *testing.T) {
+		inFile := filepath.Join(tempDir, "input.txt")
+		outFile := filepath.Join(tempDir, "encrypted_base64.bin")
+		decryptedFile := filepath.Join(tempDir, "decrypted_base64.txt")
+
+		err := ioutil.WriteFile(inFile, plaintext, 0644)
+		if err != nil {
+			t.Fatalf("Failed to write input file: %v", err)
+		}
+
+		// Generate a base64 encoded key
+		base64Key := base64.StdEncoding.EncodeToString([]byte("testbase64key"))
+
+		// Encrypt with base64 key
+		encrypt = true
+		decrypt = false
+		inputFile = inFile
+		outputFile = outFile
+		key = base64Key
+		passphrase = ""
+
+		err = run()
+		if err != nil {
+			t.Fatalf("Failed to run encryption with base64 key: %v", err)
+		}
+
+		// Decrypt with base64 key
+		encrypt = false
+		decrypt = true
+		inputFile = outFile
+		outputFile = decryptedFile
+		key = base64Key
+		passphrase = ""
+
+		err = run()
+		if err != nil {
+			t.Fatalf("Failed to run decryption with base64 key: %v", err)
+		}
+
+		// Read the decrypted file
+		decrypted, err := ioutil.ReadFile(decryptedFile)
+		if err != nil {
+			t.Fatalf("Failed to read decrypted file: %v", err)
+		}
+
+		// Compare the decrypted content with the original plaintext
+		if !bytes.Equal(decrypted, plaintext) {
+			t.Errorf("Decrypted content does not match original. Got %s, want %s", decrypted, plaintext)
 		}
 	})
 }
