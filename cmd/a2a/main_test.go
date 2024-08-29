@@ -2,7 +2,8 @@ package main
 
 import (
 	"bytes"
-	"io/ioutil"
+	"encoding/base64"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -10,7 +11,7 @@ import (
 
 func TestMain(t *testing.T) {
 	// Create a temporary directory for test files
-	tempDir, err := ioutil.TempDir("", "a2a_test")
+	tempDir, err := os.MkdirTemp("", "a2a_test")
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
@@ -18,14 +19,14 @@ func TestMain(t *testing.T) {
 
 	// Test data
 	plaintext := []byte("Hello, World!")
-	password := []byte("testpassword")
+	password := []byte("YWJjMTIzIT8kKiYoKSctPUB+")
 
 	// Test encryption
 	t.Run("Encrypt", func(t *testing.T) {
 		inFile := filepath.Join(tempDir, "input.txt")
 		outFile := filepath.Join(tempDir, "encrypted.bin")
 
-		err := ioutil.WriteFile(inFile, plaintext, 0644)
+		err := os.WriteFile(inFile, plaintext, 0644)
 		if err != nil {
 			t.Fatalf("Failed to write input file: %v", err)
 		}
@@ -91,7 +92,7 @@ func TestMain(t *testing.T) {
 		os.Stderr = oldStderr
 
 		// Read the decrypted file
-		decrypted, err := ioutil.ReadFile(outFile)
+		decrypted, err := os.ReadFile(outFile)
 		if err != nil {
 			t.Fatalf("Failed to read decrypted file: %v", err)
 		}
@@ -120,7 +121,7 @@ func TestMain(t *testing.T) {
 
 		// Restore stdout and stderr
 		w.Close()
-		out, _ := ioutil.ReadAll(r)
+		out, _ := io.ReadAll(r)
 		os.Stdout = oldStdout
 		os.Stderr = oldStderr
 
@@ -141,7 +142,7 @@ func TestMain(t *testing.T) {
 		outFile := filepath.Join(tempDir, "encrypted_base64.bin")
 		decryptedFile := filepath.Join(tempDir, "decrypted_base64.txt")
 
-		err := ioutil.WriteFile(inFile, plaintext, 0644)
+		err := os.WriteFile(inFile, plaintext, 0644)
 		if err != nil {
 			t.Fatalf("Failed to write input file: %v", err)
 		}
@@ -176,7 +177,7 @@ func TestMain(t *testing.T) {
 		}
 
 		// Read the decrypted file
-		decrypted, err := ioutil.ReadFile(decryptedFile)
+		decrypted, err := os.ReadFile(decryptedFile)
 		if err != nil {
 			t.Fatalf("Failed to read decrypted file: %v", err)
 		}
@@ -193,7 +194,7 @@ func TestMain(t *testing.T) {
 		outFile := filepath.Join(tempDir, "encrypted_urlsafe.bin")
 		decryptedFile := filepath.Join(tempDir, "decrypted_urlsafe.txt")
 
-		err := ioutil.WriteFile(inFile, plaintext, 0644)
+		err := os.WriteFile(inFile, plaintext, 0644)
 		if err != nil {
 			t.Fatalf("Failed to write input file: %v", err)
 		}
@@ -228,7 +229,7 @@ func TestMain(t *testing.T) {
 		}
 
 		// Read the decrypted file
-		decrypted, err := ioutil.ReadFile(decryptedFile)
+		decrypted, err := os.ReadFile(decryptedFile)
 		if err != nil {
 			t.Fatalf("Failed to read decrypted file: %v", err)
 		}
@@ -244,7 +245,7 @@ func TestMain(t *testing.T) {
 		inFile := filepath.Join(tempDir, "input_invalid.txt")
 		outFile := filepath.Join(tempDir, "encrypted_invalid.bin")
 
-		err := ioutil.WriteFile(inFile, plaintext, 0644)
+		err := os.WriteFile(inFile, plaintext, 0644)
 		if err != nil {
 			t.Fatalf("Failed to write input file: %v", err)
 		}
@@ -274,6 +275,122 @@ func TestMain(t *testing.T) {
 		err = run()
 		if err == nil {
 			t.Errorf("Expected an error when decrypting with invalid key, but got none")
+		}
+	})
+
+	// Test base64 encoding
+	t.Run("Base64Encoding", func(t *testing.T) {
+		inFile := filepath.Join(tempDir, "input_base64.txt")
+		outFile := filepath.Join(tempDir, "encrypted_base64.bin")
+		decryptedFile := filepath.Join(tempDir, "decrypted_base64.txt")
+
+		base64Plaintext := base64.StdEncoding.EncodeToString(plaintext)
+		err := os.WriteFile(inFile, []byte(base64Plaintext), 0644)
+		if err != nil {
+			t.Fatalf("Failed to write input file: %v", err)
+		}
+
+		// Encrypt with base64 input
+		encrypt = true
+		decrypt = false
+		inputFile = inFile
+		outputFile = outFile
+		key = string(password)
+		useBase64 = true
+		useBase92 = false
+
+		err = run()
+		if err != nil {
+			t.Fatalf("Failed to run encryption with base64 input: %v", err)
+		}
+
+		// Decrypt with base64 output
+		encrypt = false
+		decrypt = true
+		inputFile = outFile
+		outputFile = decryptedFile
+		passphrase = string(password)
+		useBase64 = true
+		useBase92 = false
+
+		err = run()
+		if err != nil {
+			t.Fatalf("Failed to run decryption with base64 output: %v", err)
+		}
+
+		// Read the decrypted file
+		decrypted, err := os.ReadFile(decryptedFile)
+		if err != nil {
+			t.Fatalf("Failed to read decrypted file: %v", err)
+		}
+
+		// Decode base64
+		decodedDecrypted, err := base64.StdEncoding.DecodeString(string(decrypted))
+		if err != nil {
+			t.Fatalf("Failed to decode base64: %v", err)
+		}
+
+		// Compare the decrypted content with the original plaintext
+		if !bytes.Equal(decodedDecrypted, plaintext) {
+			t.Errorf("Decrypted content does not match original. Got %s, want %s", decodedDecrypted, plaintext)
+		}
+	})
+
+	// Test base92 encoding
+	t.Run("Base92Encoding", func(t *testing.T) {
+		inFile := filepath.Join(tempDir, "input_base92.txt")
+		outFile := filepath.Join(tempDir, "encrypted_base92.bin")
+		decryptedFile := filepath.Join(tempDir, "decrypted_base92.txt")
+
+		base92Plaintext := base92encode(plaintext)
+		err := os.WriteFile(inFile, []byte(base92Plaintext), 0644)
+		if err != nil {
+			t.Fatalf("Failed to write input file: %v", err)
+		}
+
+		// Encrypt with base92 input
+		encrypt = true
+		decrypt = false
+		inputFile = inFile
+		outputFile = outFile
+		passphrase = string(password)
+		useBase64 = false
+		useBase92 = true
+
+		err = run()
+		if err != nil {
+			t.Fatalf("Failed to run encryption with base92 input: %v", err)
+		}
+
+		// Decrypt with base92 output
+		encrypt = false
+		decrypt = true
+		inputFile = outFile
+		outputFile = decryptedFile
+		passphrase = string(password)
+		useBase64 = false
+		useBase92 = true
+
+		err = run()
+		if err != nil {
+			t.Fatalf("Failed to run decryption with base92 output: %v", err)
+		}
+
+		// Read the decrypted file
+		decrypted, err := os.ReadFile(decryptedFile)
+		if err != nil {
+			t.Fatalf("Failed to read decrypted file: %v", err)
+		}
+
+		// Decode base92
+		decodedDecrypted, err := base92decode(string(decrypted))
+		if err != nil {
+			t.Fatalf("Failed to decode base92: %v", err)
+		}
+
+		// Compare the decrypted content with the original plaintext
+		if !bytes.Equal(decodedDecrypted, plaintext) {
+			t.Errorf("Decrypted content does not match original. Got %s, want %s", decodedDecrypted, plaintext)
 		}
 	})
 }
