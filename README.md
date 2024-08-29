@@ -2,6 +2,16 @@
 
 A2A is a secure encryption tool that uses Argon2 for key derivation and AES-256 for encryption. It provides both a Command Line Interface (CLI) and an API for easy integration into your projects.
 
+## Installation
+
+To install the A2A CLI tool, make sure you have Go installed on your system, then run:
+
+```
+go install github.com/presbrey/argon2aes/cmd/a2a@latest
+```
+
+This will download, compile, and install the `a2a` command in your `$GOPATH/bin` directory. Make sure this directory is in your system's PATH to run the `a2a` command from anywhere.
+
 ## CLI Usage
 
 The CLI allows you to encrypt and decrypt files directly from the command line. It supports both short and long forms for flags.
