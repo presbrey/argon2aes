@@ -93,4 +93,5 @@ func TestEncryptDecryptWithBlankKey(t *testing.T) {
 		t.Error("Expected an error when decrypting with a blank password, but got none")
 		defer os.Remove(decryptedFile)
 	}
+	defer os.Remove(decryptedFile)
 }
