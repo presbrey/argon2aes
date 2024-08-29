@@ -4,7 +4,22 @@ A2A is a secure encryption tool that uses Argon2 for key derivation and AES-256 
 
 ## Installation
 
-To install the A2A CLI tool, make sure you have Go installed on your system, then run:
+### Pre-built Binaries
+
+You can download pre-built binaries for various platforms from the [latest release page](https://github.com/presbrey/argon2aes/releases/latest). Choose the appropriate version for your operating system and architecture.
+
+After downloading, make the binary executable and move it to a directory in your system's PATH. For example, on Unix-like systems:
+
+```
+chmod +x a2a-<os>-<arch>
+sudo mv a2a-<os>-<arch> /usr/local/bin/a2a
+```
+
+Replace `<os>` and `<arch>` with your operating system and architecture.
+
+### Building from Source
+
+If you prefer to build from source or need a version for a platform without pre-built binaries, you can use the Go tool. Make sure you have Go installed on your system, then run:
 
 ```
 go install github.com/presbrey/argon2aes/cmd/a2a@latest
