@@ -2,6 +2,8 @@ package argon2aes
 
 import (
 	"bytes"
+	"crypto/rand"
+	"fmt"
 	"testing"
 )
 
@@ -88,6 +90,64 @@ func TestDecryptShortCiphertext(t *testing.T) {
 			_, err := Decrypt(tc.ciphertext, password)
 			if err == nil {
 				t.Error("Expected an error when decrypting short ciphertext, but got none")
+			} else if err.Error() != tc.expectedErr {
+				t.Errorf("Expected error '%s', but got '%s'", tc.expectedErr, err.Error())
+			}
+		})
+	}
+}
+
+type mockReader struct {
+	err       error
+	readCount int
+}
+
+func (r *mockReader) Read(p []byte) (n int, err error) {
+	r.readCount++
+	if r.err != nil && ((r.readCount == 1 && len(p) == saltLength) || (r.readCount == 2 && len(p) == 12)) {
+		return 0, r.err
+	}
+	return len(p), nil
+}
+
+func TestEncryptErrors(t *testing.T) {
+	origRand := rand.Reader
+	defer func() {
+		rand.Reader = origRand
+	}()
+
+	testCases := []struct {
+		name        string
+		password    []byte
+		mockReader  *mockReader
+		expectedErr string
+	}{
+		{
+			name:        "SaltGenerationError",
+			password:    []byte("password"),
+			mockReader:  &mockReader{err: fmt.Errorf("mock salt error")},
+			expectedErr: "mock salt error",
+		},
+		{
+			name:        "NonceGenerationError",
+			password:    []byte("password"),
+			mockReader:  &mockReader{err: fmt.Errorf("mock nonce error")},
+			expectedErr: "mock nonce error",
+		},
+		{
+			name:        "BlankPassword",
+			password:    []byte{},
+			mockReader:  &mockReader{},
+			expectedErr: "password cannot be blank",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			rand.Reader = tc.mockReader
+			_, err := Encrypt([]byte("test"), tc.password)
+			if err == nil {
+				t.Error("Expected an error but got none")
 			} else if err.Error() != tc.expectedErr {
 				t.Errorf("Expected error '%s', but got '%s'", tc.expectedErr, err.Error())
 			}
