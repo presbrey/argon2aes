@@ -35,28 +35,27 @@ func Encrypt(plaintext []byte, password []byte) ([]byte, error) {
 
 	key := DeriveKey(password, salt)
 
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
+	var (
+		err error
+
+		block cipher.Block
+		gcm   cipher.AEAD
+		nonce []byte
+	)
+	if block, err = aes.NewCipher(key); err == nil {
+		if gcm, err = cipher.NewGCM(block); err == nil {
+			nonce = make([]byte, gcm.NonceSize())
+			if _, err = rand.Read(nonce); err == nil {
+				ciphertext := gcm.Seal(nil, nonce, plaintext, nil)
+				encrypted := make([]byte, 0, len(salt)+len(nonce)+len(ciphertext))
+				encrypted = append(encrypted, salt...)
+				encrypted = append(encrypted, nonce...)
+				encrypted = append(encrypted, ciphertext...)
+				return encrypted, nil
+			}
+		}
 	}
-
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, err
-	}
-
-	nonce := make([]byte, gcm.NonceSize())
-	if _, err := rand.Read(nonce); err != nil {
-		return nil, err
-	}
-
-	ciphertext := gcm.Seal(nil, nonce, plaintext, nil)
-	encrypted := make([]byte, 0, len(salt)+len(nonce)+len(ciphertext))
-	encrypted = append(encrypted, salt...)
-	encrypted = append(encrypted, nonce...)
-	encrypted = append(encrypted, ciphertext...)
-
-	return encrypted, nil
+	return nil, err
 }
 
 // Decrypt decrypts ciphertext using AES-GCM with an Argon2 key
@@ -68,26 +67,26 @@ func Decrypt(data []byte, password []byte) ([]byte, error) {
 
 	key := DeriveKey(password, salt)
 
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
+	var (
+		err error
 
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, err
-	}
+		block cipher.Block
+		gcm   cipher.AEAD
+	)
 
-	nonceSize := gcm.NonceSize()
-	if len(data) < nonceSize {
-		return nil, fmt.Errorf("ciphertext too short")
-	}
+	if block, err = aes.NewCipher(key); err == nil {
+		if gcm, err = cipher.NewGCM(block); err == nil {
+			nonceSize := gcm.NonceSize()
+			if len(data) < nonceSize {
+				return nil, fmt.Errorf("ciphertext too short")
+			}
 
-	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
-	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
-	if err != nil {
-		return nil, err
+			nonce, ciphertext := data[:nonceSize], data[nonceSize:]
+			var plaintext []byte
+			if plaintext, err = gcm.Open(nil, nonce, ciphertext, nil); err == nil {
+				return plaintext, nil
+			}
+		}
 	}
-
-	return plaintext, nil
+	return nil, err
 }

@@ -27,17 +27,19 @@ func EncryptFile(inputPath, outputPath string, password []byte) error {
 		output = file
 	}
 
-	plaintext, err := io.ReadAll(input)
-	if err != nil {
-		return err
-	}
+	var (
+		plaintext  []byte
+		ciphertext []byte
+		err        error
+	)
 
-	ciphertext, err := Encrypt(plaintext, password)
-	if err != nil {
-		return err
+	plaintext, err = io.ReadAll(input)
+	if err == nil {
+		ciphertext, err = Encrypt(plaintext, password)
+		if err == nil {
+			_, err = output.Write(ciphertext)
+		}
 	}
-
-	_, err = output.Write(ciphertext)
 	return err
 }
 
@@ -63,16 +65,18 @@ func DecryptFile(inputPath, outputPath string, password []byte) error {
 		output = file
 	}
 
-	ciphertext, err := io.ReadAll(input)
-	if err != nil {
-		return err
-	}
+	var (
+		ciphertext []byte
+		plaintext  []byte
+		err        error
+	)
 
-	plaintext, err := Decrypt(ciphertext, password)
-	if err != nil {
-		return err
+	ciphertext, err = io.ReadAll(input)
+	if err == nil {
+		plaintext, err = Decrypt(ciphertext, password)
+		if err == nil {
+			_, err = output.Write(plaintext)
+		}
 	}
-
-	_, err = output.Write(plaintext)
 	return err
 }
