@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -132,6 +133,11 @@ func readInput(inputFile string) ([]byte, error) {
 	}
 
 	if flagDecrypt {
+		// Whitespace and newlines are not real chars in base64, base92, or url64
+		input = bytes.ReplaceAll(input, []byte("\n"), []byte(""))
+		input = bytes.ReplaceAll(input, []byte("\r"), []byte(""))
+		input = bytes.TrimSpace(input)
+
 		if useBase64 {
 			return base64.StdEncoding.DecodeString(string(input))
 		} else if useURL64 {
