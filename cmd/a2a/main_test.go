@@ -396,3 +396,71 @@ func TestMain(t *testing.T) {
 		}
 	})
 }
+
+func TestWriteOutput(t *testing.T) {
+	testData := []byte("Hello, World!")
+	tempFile := "test_output.tmp"
+	defer os.Remove(tempFile)
+
+	tests := []struct {
+		name     string
+		setup    func()
+		data     []byte
+		wantData []byte
+	}{
+		{
+			name: "base64 encoding",
+			setup: func() {
+				useBase64 = true
+				useBase92 = false
+				useURL64 = false
+				flagEncrypt = true
+			},
+			data:     testData,
+			wantData: []byte("SGVsbG8sIFdvcmxkIQ"),
+		},
+		{
+			name: "url64 encoding",
+			setup: func() {
+				useBase64 = false
+				useBase92 = false
+				useURL64 = true
+				flagEncrypt = true
+			},
+			data:     testData,
+			wantData: []byte("SGVsbG8sIFdvcmxkIQ"),
+		},
+		{
+			name: "no encoding",
+			setup: func() {
+				useBase64 = false
+				useBase92 = false
+				useURL64 = false
+				flagEncrypt = true
+			},
+			data:     testData,
+			wantData: testData,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setup()
+			err := writeOutput(tempFile, tt.data)
+			if err != nil {
+				t.Errorf("writeOutput() error = %v", err)
+				return
+			}
+
+			got, err := os.ReadFile(tempFile)
+			if err != nil {
+				t.Errorf("Failed to read test output file: %v", err)
+				return
+			}
+
+			if !bytes.Equal(got, tt.wantData) {
+				t.Errorf("writeOutput() = %v, want %v", got, tt.wantData)
+			}
+		})
+	}
+}
