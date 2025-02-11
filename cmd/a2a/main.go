@@ -132,22 +132,27 @@ func readInput(inputFile string) ([]byte, error) {
 		return nil, err
 	}
 
-	if flagDecrypt {
-		// Whitespace and newlines are not real chars in base64, base92, or url64
-		input = bytes.ReplaceAll(input, []byte("\n"), []byte(""))
-		input = bytes.ReplaceAll(input, []byte("\r"), []byte(""))
-		input = bytes.TrimSpace(input)
-
-		if useBase64 {
-			return base64.StdEncoding.DecodeString(string(input))
-		} else if useURL64 {
-			return base64.URLEncoding.DecodeString(string(input))
-		} else if useBase92 {
-			return base92.DefaultEncoding.DecodeString(string(input))
-		}
+	if !flagDecrypt {
+		return input, nil
 	}
 
-	return input, nil
+	if !useBase64 && !useBase92 && !useURL64 {
+		return input, nil
+	}
+
+	// Whitespace and newlines are not real chars in base64, base92, or url64
+	input = bytes.ReplaceAll(input, []byte("\n"), []byte(""))
+	input = bytes.ReplaceAll(input, []byte("\r"), []byte(""))
+	input = bytes.TrimSpace(input)
+
+	if useBase64 {
+		input, err = base64.StdEncoding.DecodeString(string(input))
+	} else if useURL64 {
+		input, err = base64.URLEncoding.DecodeString(string(input))
+	} else if useBase92 {
+		input, err = base92.DefaultEncoding.DecodeString(string(input))
+	}
+	return input, err
 }
 
 func writeOutput(outputFile string, data []byte) error {
