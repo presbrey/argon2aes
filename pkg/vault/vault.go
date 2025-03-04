@@ -2,6 +2,7 @@ package vault
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/fs"
 	"os"
 	"strconv"
@@ -24,7 +25,7 @@ type Vault struct {
 func Load12F(fsys fs.FS, path, envKey string) (*Vault, error) {
 	cipherKey := os.Getenv(envKey)
 	if cipherKey == "" {
-		return nil, os.ErrNotExist
+		return nil, fmt.Errorf("environment variable %s not set or empty", envKey)
 	}
 
 	return LoadB92(fsys, path, cipherKey)
