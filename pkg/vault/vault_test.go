@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/presbrey/argon2aes"
-	"github.com/presbrey/argon2aes/pkg/base92"
+	"github.com/presbrey/pkg/base92"
 )
 
 // mockFS is a helper function to create a mock filesystem for testing
@@ -31,7 +31,7 @@ func mockFS(t *testing.T, path string, data map[string]any, key string) fs.FS {
 	}
 
 	// Encode to base92
-	encoded := base92.DefaultEncoding.EncodeToString(encrypted)
+	encoded := base92.Encode(encrypted)
 
 	// Create a mock filesystem
 	return fstest.MapFS{
@@ -152,14 +152,14 @@ func TestLoadB92_Errors(t *testing.T) {
 			setupFS: func() fs.FS {
 				return fstest.MapFS{
 					"invalid.env": &fstest.MapFile{
-						Data: []byte("not base92 encoded"),
+						Data: []byte("not base92 encoded~"), // '~' is not in the base92 charset
 						Mode: 0644,
 					},
 				}
 			},
 			path:        "invalid.env",
 			key:         "testkey",
-			expectedErr: "invalid base92 character",
+			expectedErr: "base92: invalid character", 
 		},
 		{
 			name: "WrongKey",
@@ -168,7 +168,7 @@ func TestLoadB92_Errors(t *testing.T) {
 				data := map[string]any{"test": "value"}
 				jsonData, _ := json.Marshal(data)
 				encrypted, _ := argon2aes.Encrypt(jsonData, []byte("correctkey"))
-				encoded := base92.DefaultEncoding.EncodeToString(encrypted)
+				encoded := base92.Encode(encrypted)
 
 				return fstest.MapFS{
 					"test.env": &fstest.MapFile{
@@ -187,7 +187,7 @@ func TestLoadB92_Errors(t *testing.T) {
 				// Create invalid JSON data
 				invalidJSON := []byte("{not valid json")
 				encrypted, _ := argon2aes.Encrypt(invalidJSON, []byte("testkey"))
-				encoded := base92.DefaultEncoding.EncodeToString(encrypted)
+				encoded := base92.Encode(encrypted)
 
 				return fstest.MapFS{
 					"invalid_json.env": &fstest.MapFile{

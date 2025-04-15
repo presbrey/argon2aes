@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/presbrey/argon2aes"
-	"github.com/presbrey/argon2aes/pkg/base92"
+	"github.com/presbrey/pkg/base92"
 )
 
 // Vault holds encrypted environment data of various types and provides thread-safe access
@@ -41,7 +41,7 @@ func LoadB92(fsys fs.FS, path, key string) (*Vault, error) {
 	}
 
 	d = []byte(strings.ReplaceAll(string(d), "\n", ""))
-	d, err = base92.DefaultEncoding.DecodeString(string(d))
+	d, err = base92.Decode(string(d))
 	if err != nil {
 		return nil, err
 	}

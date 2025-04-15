@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/presbrey/argon2aes/pkg/base92"
+	"github.com/presbrey/pkg/base92"
 )
 
 func TestMain(t *testing.T) {
@@ -344,7 +344,7 @@ func TestMain(t *testing.T) {
 		outFile := filepath.Join(tempDir, "encrypted_base92.bin")
 		decryptedFile := filepath.Join(tempDir, "decrypted_base92.txt")
 
-		base92Plaintext := base92.DefaultEncoding.EncodeToString(plaintext)
+		base92Plaintext := base92.Encode(plaintext)
 		err := os.WriteFile(inFile, []byte(base92Plaintext), 0644)
 		if err != nil {
 			t.Fatalf("Failed to write input file: %v", err)
@@ -385,7 +385,7 @@ func TestMain(t *testing.T) {
 		}
 
 		// Decode base92
-		decodedDecrypted, err := base92.DefaultEncoding.DecodeString(string(decrypted))
+		decodedDecrypted, err := base92.Decode(string(decrypted))
 		if err != nil {
 			t.Fatalf("Failed to decode base92: %v", err)
 		}

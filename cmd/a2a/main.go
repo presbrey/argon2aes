@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/presbrey/argon2aes"
-	"github.com/presbrey/argon2aes/pkg/base92"
+	"github.com/presbrey/pkg/base92"
 	"github.com/spf13/pflag"
 	"golang.org/x/term"
 )
@@ -150,7 +150,7 @@ func readInput(inputFile string) ([]byte, error) {
 	} else if useURL64 {
 		input, err = base64.URLEncoding.DecodeString(string(input))
 	} else if useBase92 {
-		input, err = base92.DefaultEncoding.DecodeString(string(input))
+		input, err = base92.Decode(string(input))
 	}
 	return input, err
 }
@@ -164,7 +164,7 @@ func writeOutput(outputFile string, data []byte) error {
 		} else if useURL64 {
 			output = []byte(base64.RawURLEncoding.EncodeToString(data))
 		} else if useBase92 {
-			output = []byte(base92.DefaultEncoding.EncodeToString(data))
+			output = []byte(base92.Encode(data))
 		} else {
 			output = data
 		}
